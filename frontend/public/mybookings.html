@@ -1,0 +1,73 @@
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>My Bookings</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="navbar">
+    <h2>Hotel Management</h2>
+    <nav>
+      <a href="/home">Home</a>
+      <a href="/booking">Book Room</a>
+      <a href="/mybookings">My Bookings</a>
+      <a href="/logout">Logout</a>
+    </nav>
+  </header>
+
+  <main>
+    <h2>My Bookings</h2>
+    <table border="1" cellspacing="0" cellpadding="10">
+      <thead>
+        <tr>
+          <th>Room</th>
+          <th>Type</th>
+          <th>Check-In</th>
+          <th>Check-Out</th>
+          <th>Status</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="bookingTable"></tbody>
+    </table>
+  </main>
+
+  <script>
+    async function loadBookings() {
+      const res = await fetch('/api/bookings/my');
+      const bookings = await res.json();
+      const tbody = document.getElementById('bookingTable');
+
+      tbody.innerHTML = '';
+      bookings.forEach(b => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+          <td>${b.room.roomNumber}</td>
+          <td>${b.room.roomType}</td>
+          <td>${new Date(b.checkInDate).toLocaleDateString()}</td>
+          <td>${new Date(b.checkOutDate).toLocaleDateString()}</td>
+          <td style="color: ${b.status === 'booked' ? 'green' : 'red'}">${b.status}</td>
+          <td>
+            ${b.status === 'booked' ? `<button onclick="cancelBooking('${b._id}')">Cancel</button>` : ''}
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+    }
+
+    async function cancelBooking(id) {
+      const confirmed = confirm("Are you sure you want to cancel this booking?");
+      if (!confirmed) return;
+      const res = await fetch(`/api/bookings/${id}/cancel`, { method: 'PUT' });
+      if (res.ok) {
+        alert("Booking cancelled successfully.");
+        loadBookings();
+      } else {
+        alert("Failed to cancel booking.");
+      }
+    }
+
+    loadBookings();
+  </script>
+</body>
+</html>

@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Available Rooms</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <style>
+    :root {
+      --primary-color: #2c3e50;
+      --secondary-color: #3498db;
+      --hover-color: #2980b9;
+      --bg-color: #f4f6f8;
+      --text-color: #555;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: var(--bg-color);
+    }
+
+    .navbar {
+      background-color: var(--primary-color);
+      color: white;
+      padding: 1rem 2rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    .navbar a {
+      color: white;
+      margin-left: 1.5rem;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .navbar a:hover {
+      text-decoration: underline;
+    }
+
+    h2.title {
+      text-align: center;
+      margin: 30px 0 20px;
+      color: var(--primary-color);
+      font-size: 28px;
+    }
+
+    .room-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 20px;
+      padding: 30px 60px;
+    }
+
+    .room-card {
+      display: flex;
+      flex-direction: column;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+      overflow: hidden;
+      transition: transform 0.3s ease;
+    }
+
+    .room-card:hover {
+      transform: translateY(-4px);
+    }
+
+    .room-card img {
+      width: 100%;
+      height: 180px;
+      object-fit: cover;
+    }
+
+    .card-body {
+      display: flex;
+      flex-direction: column;
+      padding: 15px;
+      flex-grow: 1;
+    }
+
+    .card-body h3 {
+      font-size: 18px;
+      color: var(--primary-color);
+      margin-bottom: 10px;
+    }
+
+    .card-body p {
+      font-size: 14px;
+      color: var(--text-color);
+      margin-bottom: 8px;
+    }
+
+    .book-btn {
+      margin-top: auto;
+      padding: 10px 15px;
+      background-color: var(--secondary-color);
+      color: white;
+      text-align: center;
+      text-decoration: none;
+      border-radius: 5px;
+      font-weight: bold;
+      transition: background-color 0.3s ease;
+    }
+
+    .book-btn:hover {
+      background-color: var(--hover-color);
+    }
+
+    @media (max-width: 768px) {
+      .room-container {
+        padding: 20px;
+      }
+    }
+
+    @media (max-width: 600px) {
+      .navbar {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .navbar nav {
+        margin-top: 10px;
+      }
+
+      .navbar a {
+        margin-left: 0;
+        margin-right: 1rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header class="navbar">
+    <h2>Hotel Management</h2>
+    <nav>
+      <a href="/home">Home</a>
+      <a href="/booking">Book Room</a>
+      <a href="/mybookings">My Bookings</a>
+      <a href="/rooms">Rooms</a>
+      <a href="/logout">Logout</a>
+    </nav>
+  </header>
+
+  <main>
+    <h2 class="title">Available Rooms</h2>
+    <div class="room-container" id="roomList">
+      <!-- Room cards will be inserted here -->
+    </div>
+  </main>
+
+  <script>
+    async function loadRooms() {
+      try {
+        const res = await fetch('/api/rooms');
+        const rooms = await res.json();
+        const roomList = document.getElementById("roomList");
+
+        roomList.innerHTML = ""; // Clear existing
+
+        rooms.forEach(room => {
+          const card = document.createElement("div");
+          card.className = "room-card";
+
+          card.innerHTML = `
+            <img src="/uploads/${room.image}" alt="Room Image">
+            <div class="card-body">
+              <h3>Room ${room.roomNumber}</h3>
+              <p><strong>Type:</strong> ${room.roomType}</p>
+              <p><strong>Price:</strong> ₹${room.price}/night</p>
+              <a href="/booking?roomId=${room._id}" class="book-btn">Book Now</a>
+            </div>
+          `;
+
+          roomList.appendChild(card);
+        });
+      } catch (error) {
+        console.error("Error loading rooms:", error);
+      }
+    }
+
+    loadRooms();
+  </script>
+</body>
+</html>

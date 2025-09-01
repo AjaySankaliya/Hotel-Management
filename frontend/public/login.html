@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Login</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: #f0f2f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .login-container {
+      background: white;
+      padding: 30px 40px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+      width: 370px;
+    }
+
+    .login-container h2 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    .toggle-role {
+      display: flex;
+      justify-content: space-between;
+      margin-bottom: 20px;
+    }
+
+    .toggle-btn {
+      flex: 1;
+      margin: 0 5px;
+      padding: 10px;
+      border: none;
+      border-radius: 20px;
+      cursor: pointer;
+      background-color: #ccc;
+      color: black;
+      font-weight: bold;
+      transition: background-color 0.3s;
+    }
+
+    .toggle-btn.active {
+      background-color: #007bff;
+      color: white;
+    }
+
+    .login-container label {
+      display: block;
+      margin-bottom: 8px;
+      color: #444;
+      font-weight: 500;
+    }
+
+    .login-container input {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 20px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      outline: none;
+      transition: border-color 0.3s;
+    }
+
+    .login-container input:focus {
+      border-color: #007bff;
+    }
+
+    .login-container button[type="submit"] {
+      width: 100%;
+      padding: 12px;
+      background-color: #007bff;
+      border: none;
+      border-radius: 6px;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+
+    .login-container button[type="submit"]:hover {
+      background-color: #0056b3;
+    }
+
+    .error {
+      color: red;
+      text-align: center;
+      margin-bottom: 10px;
+    }
+
+    .action-links {
+      text-align: center;
+      margin-top: 10px;
+    }
+
+    .action-links a {
+      color: #007bff;
+      text-decoration: none;
+    }
+
+    .action-links a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <h2>Login</h2>
+    <div class="toggle-role">
+      <button class="toggle-btn active" type="button" id="userBtn" onclick="selectRole('customer')">User Login</button>
+      <button class="toggle-btn" type="button" id="adminBtn" onclick="selectRole('admin')">Admin Login</button>
+    </div>
+    <div id="error" class="error"></div>
+    <form action="/login" method="POST">
+      <input type="hidden" name="role" id="role" value="customer" />
+
+      <label for="email">Email Address</label>
+      <input type="email" id="email" name="email" required />
+
+      <label for="password">Password</label>
+      <input type="password" id="password" name="password" required />
+
+      <button type="submit">Login</button>
+    </form>
+
+    <div class="action-links">
+      <a href="/signup">Back to Signup</a>
+    </div>
+  </div>
+
+  <script>
+    function selectRole(role) {
+      document.getElementById("role").value = role;
+
+      const userBtn = document.getElementById("userBtn");
+      const adminBtn = document.getElementById("adminBtn");
+
+      if (role === "admin") {
+        adminBtn.classList.add("active");
+        userBtn.classList.remove("active");
+      } else {
+        userBtn.classList.add("active");
+        adminBtn.classList.remove("active");
+      }
+    }
+
+    const params = new URLSearchParams(window.location.search);
+    const errorBox = document.getElementById("error");
+    if (params.get("error") === "invalid") {
+      errorBox.textContent = "Invalid email or password!";
+    }
+    if (params.get("session") === "expired") {
+      errorBox.textContent = "Session expired. Please login again.";
+    }
+    if (params.get("logout") === "success") {
+      errorBox.style.color = "green";
+      errorBox.textContent = "You have been logged out.";
+    }
+    if (params.get("signup") === "success") {
+      errorBox.style.color = "green";
+      errorBox.textContent = "Signup successful! Please login.";
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,110 @@
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Book a Room</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="navbar">
+    <h2>Hotel Management</h2>
+    <nav>
+      <a href="/home">Home</a>
+      <a href="/booking">Book Room</a>
+      <a href="/mybookings">My Bookings</a>
+      <a href="/logout">Logout</a>
+    </nav>
+  </header>
+
+  <main>
+    <h2>Book a Room</h2>
+    <form id="bookingForm">
+      <label for="room">Select Room</label>
+      <select id="room" name="room" required></select>
+
+      <div id="roomDetails"></div>
+
+      <label for="checkIn">Check-In Date</label>
+      <input type="date" id="checkIn" name="checkInDate" required />
+
+      <label for="checkOut">Check-Out Date</label>
+      <input type="date" id="checkOut" name="checkOutDate" required />
+
+      <div><strong>Total Price:</strong> ₹<span id="totalPrice">0</span></div>
+
+      <button type="submit">Book Now</button>
+      <div class="msg" id="msg"></div>
+    </form>
+  </main>
+
+  <script>
+    let roomMap = {};
+
+    async function loadRooms() {
+      const res = await fetch('/api/rooms');
+      const rooms = await res.json();
+
+      const select = document.getElementById('room');
+      select.innerHTML = '<option value="">-- Select Room --</option>';
+      rooms.filter(r => r.status === 'available').forEach(room => {
+        roomMap[room._id] = room;
+        const opt = document.createElement('option');
+        opt.value = room._id;
+        opt.textContent = `${room.roomNumber} - ${room.roomType}`;
+        select.appendChild(opt);
+      });
+    }
+
+    function calculateTotalPrice() {
+      const roomId = document.getElementById('room').value;
+      const checkIn = new Date(document.getElementById('checkIn').value);
+      const checkOut = new Date(document.getElementById('checkOut').value);
+
+      if (!roomId || !checkIn || !checkOut || checkOut <= checkIn) return;
+
+      const days = Math.ceil((checkOut - checkIn) / (1000 * 60 * 60 * 24));
+      const price = roomMap[roomId].price;
+      document.getElementById('totalPrice').innerText = price * days;
+    }
+
+    document.getElementById('room').addEventListener('change', () => {
+      const room = roomMap[document.getElementById('room').value];
+      document.getElementById('roomDetails').innerHTML = room ? `
+        <p><strong>Type:</strong> ${room.roomType}</p>
+        <p><strong>Price:</strong> ₹${room.price} / night</p>
+      ` : '';
+      calculateTotalPrice();
+    });
+
+    document.getElementById('checkIn').addEventListener('change', calculateTotalPrice);
+    document.getElementById('checkOut').addEventListener('change', calculateTotalPrice);
+
+    document.getElementById('bookingForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const room = document.getElementById('room').value;
+      const checkInDate = document.getElementById('checkIn').value;
+      const checkOutDate = document.getElementById('checkOut').value;
+
+      const res = await fetch('/api/bookings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ room, checkInDate, checkOutDate })
+      });
+
+      const msgBox = document.getElementById('msg');
+      if (res.ok) {
+        msgBox.textContent = 'Room booked successfully!';
+        msgBox.style.color = 'green';
+        document.getElementById('bookingForm').reset();
+        document.getElementById('roomDetails').innerHTML = '';
+        document.getElementById('totalPrice').innerText = '0';
+      } else {
+        msgBox.textContent = 'Booking failed.';
+        msgBox.style.color = 'red';
+      }
+    });
+
+    loadRooms();
+  </script>
+</body>
+</html>
